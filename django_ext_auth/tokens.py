@@ -42,5 +42,9 @@ def get_user_for_sessionid(sessionid, user_ip=None):
     return user
 
 
-def get_user_for_token(token, user_ip=None):
-    return get_user_for_sessionid(sessionid=token, user_ip=user_ip)
+def get_user_for_token(token, user_ip=None, skip_invalid_token=True):
+    try:
+        return get_user_for_sessionid(sessionid=token, user_ip=user_ip)
+    except PermissionDenied:
+        if not skip_invalid_token:
+            raise

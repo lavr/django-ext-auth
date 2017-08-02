@@ -21,9 +21,11 @@ class BaseAuthentication(object):
         pass
 
 
+
 class Token(BaseAuthentication):
 
     auth_rx = re.compile(r"^Bearer (.+)$")
+    skip_invalid_token = False
 
     def authenticate(self, request):
         if "HTTP_AUTHORIZATION" not in request.META:
@@ -34,9 +36,16 @@ class Token(BaseAuthentication):
             return None
 
         token = token_rx_match.group(1)
-        user = get_user_for_token(token, user_ip=get_real_ip(request))
+        user = get_user_for_token(token, user_ip=get_real_ip(request), skip_invalid_token=self.skip_invalid_token)
 
         return (user, token)
 
     def authenticate_header(self, request):
         return 'Bearer realm="api"'
+
+
+class WeakToken(Token):
+    """
+    Если токен не подходит, то не выкидывать экспешен, а пробовать следующий бэкенд авторизации
+    """
+    skip_invalid_token = True
