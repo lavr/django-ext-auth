@@ -38,6 +38,9 @@ class Token(BaseAuthentication):
         token = token_rx_match.group(1)
         user = get_user_for_token(token, user_ip=get_real_ip(request), skip_invalid_token=self.skip_invalid_token)
 
+        if user is None:
+            return None
+
         return (user, token)
 
     def authenticate_header(self, request):
