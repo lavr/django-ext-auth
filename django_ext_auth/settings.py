@@ -14,4 +14,6 @@ EXTAUTH_USERNAME_FIELD = 'username'
 
 EXTAUTH_USER_EXTRA_FIELDS = (
     ('username', 'username'),
+    ('email', 'email')
 )
+/

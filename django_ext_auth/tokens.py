@@ -5,6 +5,7 @@ from django.db.models import ObjectDoesNotExist
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.hashers import make_password
 from .exceptions import Unauthorized, AuthNotAvailable, LocalUserDoesNotExist
+from . import settings as default_settings
 
 
 def _load_userinfo(sessionid, user_ip):
@@ -25,6 +26,16 @@ def _load_userinfo(sessionid, user_ip):
     raise AuthNotAvailable()
 
 
+def create_user(data):
+    mapping = getattr(settings, 'EXTAUTH_USER_EXTRA_FIELDS', None) or default_settings.EXTAUTH_USER_EXTRA_FIELDS
+    kwargs = {}
+    for source_field, dest_field in mapping:
+        kwargs[dest_field] = data.get(source_field)
+    return get_user_model().objects.create(
+        password=make_password(None),
+        **kwargs)
+
+
 def get_user_for_sessionid(sessionid, user_ip=None):
 
     user_data = _load_userinfo(sessionid, user_ip=user_ip)
@@ -33,9 +44,7 @@ def get_user_for_sessionid(sessionid, user_ip=None):
         user = get_user_model().objects.get(username=user_data['username'])
     except ObjectDoesNotExist:
         if settings.EXTAUTH_CREATE_USER_ON_ACCESS:
-            del user_data['id']
-            user = get_user_model().objects.create(password=make_password(None),
-                                                   **user_data)
+            user = create_user(user_data)
         else:
             raise LocalUserDoesNotExist()
 
