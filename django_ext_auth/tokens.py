@@ -30,7 +30,7 @@ def get_user_for_sessionid(sessionid, user_ip=None):
     user_data = _load_userinfo(sessionid, user_ip=user_ip)
 
     try:
-        user = get_user_model().objects.get(pk=user_data['id'])
+        user = get_user_model().objects.get(username=user_data['username'])
     except ObjectDoesNotExist:
         if settings.EXTAUTH_CREATE_USER_ON_ACCESS:
             del user_data['id']
